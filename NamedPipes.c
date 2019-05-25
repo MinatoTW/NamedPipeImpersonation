@@ -34,7 +34,7 @@ BOOL EnableWindowsPrivilege(LPCWSTR Privilege)
 int main(int argc, WCHAR* argv)
 {
 
-	HANDLE hPipe, hToken, userToken, currentProcess;
+	HANDLE hPipe, hToken, userToken;
 	char buffer[1024];
 	DWORD dwRead;
 	SECURITY_DESCRIPTOR sd;
@@ -47,6 +47,8 @@ int main(int argc, WCHAR* argv)
 	if (EnableWindowsPrivilege(SE_IMPERSONATE_NAME)) {
 		printf("Enabled SeImpersonatePrivilege\n");
 	}
+	else
+		printf("Failed to enable SeImpersonatePrivilege\n");
 
 	printf("Starting server\n");
 
@@ -62,12 +64,12 @@ int main(int argc, WCHAR* argv)
 
 	printf("Impersonating...\n");
 
-	if (ImpersonateNamedPipeClient(hPipe) != TRUE)
+	if (ImpersonateNamedPipeClient(hPipe) != TRUE) {
 		printf("Failed to impersonate client\n");
+		exit(1);
+	}
 	else {
 		printf("Successfully impersonated client\n");
-
-		currentProcess = GetCurrentProcess();
 
 		if (OpenThreadToken(GetCurrentThread(), TOKEN_ALL_ACCESS, FALSE, &hToken) == 0)
 		{
@@ -76,9 +78,6 @@ int main(int argc, WCHAR* argv)
 		else {
 
 			printf("Got client token\n");
-
-			SECURITY_IMPERSONATION_LEVEL seImpersonateLevel = SecurityImpersonation;
-			TOKEN_TYPE tokenType = TokenPrimary;
 
 			if (DuplicateTokenEx(hToken, TOKEN_ALL_ACCESS, NULL, SecurityImpersonation, TokenPrimary, &userToken) == 0) {
 				printf("Duplication failed\n");
