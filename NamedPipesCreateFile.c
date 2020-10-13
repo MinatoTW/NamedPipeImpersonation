@@ -116,7 +116,7 @@ int main(int argc, TCHAR *argv)
 			    }
 			    else
 			    {
-			       printf("Wrote successfully.\n");
+			       printf("Written successfully.\n");
 			    }
 			}
 
